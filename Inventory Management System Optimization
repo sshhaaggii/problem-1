@@ -1,0 +1,70 @@
+import random
+import datetime
+
+# Mock database for products
+inventory_database = {
+    'product_001': {'name': 'Product A', 'stock_level': 100, 'reorder_threshold': 20, 'lead_time': 7, 'safety_stock': 10},
+    'product_002': {'name': 'Product B', 'stock_level': 50, 'reorder_threshold': 15, 'lead_time': 5, 'safety_stock': 8},
+}
+
+# Mock sales data
+sales_data = [
+    {'product_id': 'product_001', 'quantity': 5, 'date': datetime.date(2024, 8, 24)},
+    {'product_id': 'product_002', 'quantity': 10, 'date': datetime.date(2024, 8, 24)},
+]
+
+def track_inventory(sales_data):
+    for sale in sales_data:
+        product_id = sale['product_id']
+        quantity_sold = sale['quantity']
+        
+        inventory_database[product_id]['stock_level'] -= quantity_sold
+        
+        if inventory_database[product_id]['stock_level'] < inventory_database[product_id]['reorder_threshold']:
+            trigger_reorder_alert(product_id)
+
+def trigger_reorder_alert(product_id):
+    print(f"Reorder alert for {inventory_database[product_id]['name']}! Stock level is below the threshold.")
+
+def calculate_reorder_point(product_id):
+    lead_time = inventory_database[product_id]['lead_time']
+    average_daily_sales = random.uniform(1, 5)  # Simulating daily sales for simplicity
+    reorder_point = average_daily_sales * lead_time
+    safety_stock = inventory_database[product_id]['safety_stock']
+    
+    return reorder_point + safety_stock
+
+def calculate_reorder_quantity(product_id):
+    reorder_point = calculate_reorder_point(product_id)
+    current_stock_level = inventory_database[product_id]['stock_level']
+    
+    reorder_quantity = reorder_point - current_stock_level
+    
+    return max(reorder_quantity, 0)  # Ensure reorder quantity is not negative
+
+def generate_reports():
+    for product_id, product_data in inventory_database.items():
+        turnover_rate = product_data['stock_level'] / random.uniform(1, 10)  # Simulated turnover rate
+        print(f"Turnover rate for {product_data['name']}: {turnover_rate:.2f}")
+    # Additional stockout and overstock reports can be added similarly
+
+def main():
+    track_inventory(sales_data)
+    
+    while True:
+        user_input = input("Enter product ID/name or 'report' for reports: ")
+        
+        if user_input.startswith('product_'):
+            product_id = user_input
+            stock_level = inventory_database[product_id]['stock_level']
+            reorder_point = calculate_reorder_point(product_id)
+            reorder_quantity = calculate_reorder_quantity(product_id)
+            
+            print(f"Current Stock Level for {inventory_database[product_id]['name']}: {stock_level}")
+            print(f"Reorder Point: {reorder_point:.2f}")
+            print(f"Suggested Reorder Quantity: {reorder_quantity:.2f}")
+        elif user_input == 'report':
+            generate_reports()
+
+if __name__ == "__main__":
+    main()
