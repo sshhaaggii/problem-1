@@ -1,0 +1,47 @@
+import requests
+
+API_KEY = "your_api_key_here"
+
+def get_weather_data(location):
+    if isinstance(location, str):  # Assuming input is city name
+        api_endpoint = f"https://api.openweathermap.org/data/2.5/weather?q={location}&appid={API_KEY}"
+    elif isinstance(location, tuple):  # Assuming input is (latitude, longitude)
+        lat, lon = location
+        api_endpoint = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}"
+    else:
+        return "Invalid location format"
+    
+    response = requests.get(api_endpoint)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return f"Error: {response.status_code}"
+
+def display_weather_data(data):
+    temperature = data['main']['temp'] - 273.15  # Convert from Kelvin to Celsius
+    weather_conditions = data['weather'][0]['description']
+    humidity = data['main']['humidity']
+    wind_speed = data['wind']['speed']
+    
+    print(f"Temperature: {temperature:.2f}°C")
+    print(f"Weather Conditions: {weather_conditions.capitalize()}")
+    print(f"Humidity: {humidity}%")
+    print(f"Wind Speed: {wind_speed} m/s")
+
+def main():
+    location = input("Enter city name or 'lat,lon' for coordinates: ")
+    
+    if ',' in location:
+        lat, lon = map(float, location.split(','))
+        location = (lat, lon)
+    
+    weather_data = get_weather_data(location)
+    
+    if isinstance(weather_data, dict):
+        display_weather_data(weather_data)
+    else:
+        print(weather_data)
+
+if __name__ == "__main__":
+    main()
