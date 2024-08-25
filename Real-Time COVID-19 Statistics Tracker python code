@@ -1,0 +1,47 @@
+import requests
+
+# Function to get COVID-19 data for a specific country or globally
+def get_covid_data(country=None):
+    if country:
+        url = f"https://disease.sh/v3/covid-19/countries/{country}"
+    else:
+        url = "https://disease.sh/v3/covid-19/all"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Check if the request was successful
+        data = response.json()
+
+        # Extract relevant data
+        if country:
+            print(f"COVID-19 Statistics for {data['country']}:")
+        else:
+            print("Global COVID-19 Statistics:")
+        
+        print(f"Total Cases: {data['cases']}")
+        print(f"Total Deaths: {data['deaths']}")
+        print(f"Total Recovered: {data['recovered']}")
+        print(f"Active Cases: {data['active']}")
+        print(f"Critical Cases: {data['critical']}")
+        print(f"Cases Today: {data['todayCases']}")
+        print(f"Deaths Today: {data['todayDeaths']}")
+        print(f"Recovered Today: {data['todayRecovered']}")
+        print(f"Total Tests: {data['tests']}")
+    
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP error occurred: {http_err}")
+    except Exception as err:
+        print(f"Other error occurred: {err}")
+
+# Main function to prompt user input and display data
+def main():
+    print("Real-Time COVID-19 Statistics Tracker")
+    country = input("Enter the country name (or press Enter for global data): ").strip()
+    
+    if country:
+        get_covid_data(country=country)
+    else:
+        get_covid_data()
+
+if __name__ == "__main__":
+    main()
