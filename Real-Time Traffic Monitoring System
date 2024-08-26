@@ -1,66 +1,32 @@
-import random
+import psutil
 import time
 
-# Mock data for traffic sensors
-sensors_list = [
-    {'location': 'Main Street', 'vehicle_count': 0, 'average_speed': 0},
-    {'location': '2nd Avenue', 'vehicle_count': 0, 'average_speed': 0},
-    {'location': 'Broadway', 'vehicle_count': 0, 'average_speed': 0},
-]
+def get_network_stats():
+    """
+    Get network statistics (bytes sent and received).
+    """
+    net_stats = psutil.net_io_counters()
+    return net_stats.bytes_sent, net_stats.bytes_recv
 
-# Thresholds
-congestion_threshold = 20  # km/h
-alert_threshold = 15  # High congestion level
+def display_traffic_stats():
+    """
+    Display real-time traffic statistics.
+    """
+    print("Real-Time Traffic Monitoring (Press Ctrl+C to exit):")
+    try:
+        while True:
+            sent_before, recv_before = get_network_stats()
+            time.sleep(1)  # Wait for 1 second
+            sent_after, recv_after = get_network_stats()
 
-# Mock database
-central_database = {}
+            sent_speed = (sent_after - sent_before) / 1024  # KB/s
+            recv_speed = (recv_after - recv_before) / 1024  # KB/s
 
-def collect_traffic_data():
-    for sensor in sensors_list:
-        sensor['vehicle_count'] = random.randint(50, 200)
-        sensor['average_speed'] = random.uniform(10, 60)
-        
-        central_database[sensor['location']] = {
-            'vehicle_count': sensor['vehicle_count'],
-            'average_speed': sensor['average_speed']
-        }
-        
-        if sensor['average_speed'] < congestion_threshold:
-            trigger_congestion_alert(sensor['location'])
+            print(f"Sent: {sent_speed:.2f} KB/s | Received: {recv_speed:.2f} KB/s")
 
-def trigger_congestion_alert(location):
-    print(f"Congestion alert at {location}! Speed below threshold.")
-
-def analyze_traffic_data():
-    for road, data in central_database.items():
-        congestion_level = data['vehicle_count'] / data['average_speed']  # Simplified calculation
-        
-        if congestion_level > alert_threshold:
-            send_alert(road, congestion_level)
-        
-        update_visualization(road, congestion_level)
-
-def send_alert(road, congestion_level):
-    print(f"Alert: High congestion on {road}. Level: {congestion_level:.2f}")
-    print(f"Suggested alternative route for {road}: Use side streets.")
-
-def update_visualization(road, congestion_level):
-    color_code = determine_color_code(congestion_level)
-    print(f"Road: {road} - Traffic Level: {congestion_level:.2f} - Color Code: {color_code}")
-
-def determine_color_code(congestion_level):
-    if congestion_level < 10:
-        return 'Green'
-    elif 10 <= congestion_level < 20:
-        return 'Yellow'
-    else:
-        return 'Red'
-
-def main():
-    while True:
-        collect_traffic_data()
-        analyze_traffic_data()
-        time.sleep(10)  # Wait before collecting the next batch of data
+    except KeyboardInterrupt:
+        print("\nMonitoring stopped. Have a great day!")
 
 if __name__ == "__main__":
-    main()
+    display_traffic_stats()
+
